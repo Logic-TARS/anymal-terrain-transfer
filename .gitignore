@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+
+# Training outputs and checkpoints
+runs/
+logs/
+wandb/
+tensorboard/
+*.pickle
+*.pt
+*.pth
+*.onnx
+
+# Local internship source material kept outside the curated GitHub package
+周报/
+任务2.docx
+迁移任务代码和详细文档/
+
+# Raw screenshots and videos at the workspace root.
+# Curated showcase files are copied under media/.
+Snipaste_*.png
+2026-*.mp4
+anymalc 复杂地形迁移.mp4
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

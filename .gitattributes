@@ -1,0 +1,5 @@
+*.md text eol=lf
+*.py text eol=lf
+*.bash text eol=lf
+*.png binary
+*.mp4 binary
