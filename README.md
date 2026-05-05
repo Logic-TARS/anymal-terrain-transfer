@@ -1,46 +1,86 @@
-# ANYmal-C Rough Terrain Navigation Transfer
+<div align="center">
 
-![Python](https://img.shields.io/badge/Python-3.10-blue)
-![Isaac Lab](https://img.shields.io/badge/Isaac%20Lab-Robotics%20Simulation-green)
-![MotrixLab](https://img.shields.io/badge/MotrixLab-RL%20Training-orange)
-![PPO](https://img.shields.io/badge/RL-PPO-purple)
+# ANYmal-C 复杂地形导航迁移
 
-基于 Isaac Lab 与 MotrixLab 的 ANYmal-C 四足机器人复杂地形导航迁移项目。项目来自线上实习结营任务，重点展示机器人强化学习任务迁移、复杂地形适配、策略加载、训练评估与调参分析能力。
+### 基于 Isaac Lab 与 MotrixLab 的四足机器人强化学习结营项目
 
-![ANYmal-C rough terrain demo](media/rough_terrain_demo.png)
+[English](README_EN.md) · [项目文档](docs/task2-implementation.md) · [训练分析](docs/training-analysis.md) · [简历描述](docs/resume-bullets.md)
 
-## Project Overview
+![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)
+![Isaac Lab](https://img.shields.io/badge/Isaac%20Lab-Robotics%20Simulation-76B900)
+![MotrixLab](https://img.shields.io/badge/MotrixLab-RL%20Training-F97316)
+![PPO](https://img.shields.io/badge/Algorithm-PPO-7C3AED)
+![Task](https://img.shields.io/badge/Task-Rough%20Terrain%20Navigation-0F766E)
 
-This project explores sim-to-sim task transfer for quadruped robot navigation. It migrates the ANYmal-C navigation task from flat terrain to rough terrain, adapts the low-level locomotion policy to a HeightScan-based controller, and analyzes PPO training instability caused by adaptive learning-rate oscillation.
+<br />
 
-中文定位：
+![ANYmal-C rough terrain preview](media/anymal_rough_terrain_preview.gif)
 
-> 基于 Isaac Lab / MotrixLab 现有机器人仿真与强化学习框架，完成 ANYmal-C 导航任务从平坦地形到复杂地形的迁移、策略适配、训练评估和优化分析。
+</div>
 
-## Highlights
+## 项目简介
 
-- Migrated ANYmal-C navigation from flat terrain to rough terrain.
-- Replaced flat locomotion configuration with rough-terrain configuration.
-- Adapted the low-level policy to a HeightScan-based pretrained controller.
-- Added MotrixLab rough-terrain training and evaluation scripts.
-- Analyzed PPO training instability caused by high and oscillating adaptive learning rates.
-- Proposed smoother training settings such as linear learning-rate decay and lower initial learning rate.
-- Organized implementation notes, experiment results, screenshots, and demo video for reproducible project presentation.
+本项目来自线上实习结营任务，目标是将 ANYmal-C 四足机器人导航任务从平坦地形迁移到复杂地形，并完成策略适配、训练评估与调参分析。
 
-## Technical Stack
+项目不是从零实现强化学习框架，而是基于 Isaac Lab / MotrixLab 现有机器人仿真与强化学习体系，完成一个更贴近工程实习场景的任务迁移项目：读懂框架、替换配置、接入策略、整理训练脚本，并对 PPO 训练稳定性做实验分析。
 
-- Robot: ANYmal-C quadruped robot
-- Simulation: Isaac Lab, MotrixLab, MotrixSim / MuJoCo-style scene assets
-- Learning algorithm: PPO
-- Policy adaptation: HeightScan-based low-level locomotion policy
-- Training tools: SKRL, TensorBoard, Python
-- Task type: rough terrain navigation, target-position tracking, yaw alignment
+> 一句话定位：基于 Isaac Lab 与 MotrixLab 完成 ANYmal-C 复杂地形导航迁移，适配 HeightScan 高度感知策略，并分析 PPO 学习率震荡导致的训练不稳定问题。
 
-## Key Implementation
+## 效果展示
 
-### Isaac Lab Rough Terrain Adaptation
+### 动态预览
 
-The Isaac-navigation task was adapted from a flat-terrain low-level configuration to a rough-terrain configuration:
+上方 GIF 由多段运行截图合成，用于在 GitHub 首页稳定展示复杂地形导航效果。完整视频见：
+
+[media/anymal_c_rough_terrain_demo.mp4](media/anymal_c_rough_terrain_demo.mp4)
+
+### 运行截图
+
+| 近距离机器人视角 | 粗糙地形全景 |
+| --- | --- |
+| ![robot closeup](media/robot_closeup.png) | ![rough terrain overview](media/rough_terrain_overview.png) |
+
+| 目标方向与导航标记 | 多环境评估场景 |
+| --- | --- |
+| ![navigation targets](media/navigation_targets.png) | ![multi env evaluation](media/multi_env_evaluation.png) |
+
+## 我完成了什么
+
+- 将 Isaac-navigation 中 ANYmal-C 低层环境配置从平坦地形切换为复杂地形。
+- 使用 `AnymalCRoughEnvCfg` 替代原平坦地形配置。
+- 接入 HeightScan 高度扫描观测，使低层策略具备地形感知能力。
+- 将预训练策略路径切换到 `ANYmal-C/HeightScan/policy.pt`。
+- 在 MotrixLab 中整理 `anymal_c_navigation_rough` 训练与评估命令。
+- 分析 PPO 训练中自适应学习率震荡与 episode length 抖动之间的关系。
+- 整理 README、任务文档、训练分析、演示图片和视频，使项目可以直接作为简历作品展示。
+
+## 技术栈
+
+| 模块 | 内容 |
+| --- | --- |
+| 机器人平台 | ANYmal-C 四足机器人 |
+| 仿真框架 | Isaac Lab, MotrixLab, MotrixSim |
+| 强化学习算法 | PPO |
+| 策略适配 | HeightScan-based low-level locomotion policy |
+| 训练工具 | SKRL, TensorBoard, Python |
+| 任务类型 | Rough Terrain Navigation, Target Tracking, Yaw Alignment |
+
+## 核心思路
+
+```mermaid
+flowchart LR
+    A["Flat Terrain Navigation"] --> B["Rough Terrain Config"]
+    B --> C["HeightScan Observation"]
+    C --> D["Pretrained Low-level Policy"]
+    D --> E["MotrixLab Training / Evaluation"]
+    E --> F["PPO Stability Analysis"]
+```
+
+复杂地形导航和普通平地导航的关键差异在于：机器人不能只依赖本体速度、关节状态和目标命令，还需要知道脚下地形的高度变化。因此，任务迁移不仅是替换地形文件，还需要同步替换低层 locomotion policy 的观测配置。
+
+## Isaac Lab 关键改动
+
+原任务使用平坦地形配置，迁移后切换为 rough terrain 配置，并加载 HeightScan 预训练策略：
 
 ```python
 from isaaclab_tasks.manager_based.locomotion.velocity.config.anymal_c.rough_env_cfg import (
@@ -58,73 +98,62 @@ pre_trained_policy_action = mdp.PreTrainedPolicyActionCfg(
 )
 ```
 
-See [examples/isaaclab_navigation_env_cfg_patch.py](examples/isaaclab_navigation_env_cfg_patch.py).
+完整示例见 [examples/isaaclab_navigation_env_cfg_patch.py](examples/isaaclab_navigation_env_cfg_patch.py)。
 
-### MotrixLab Rough Terrain Task
+## MotrixLab 任务配置
 
-The MotrixLab task registers two environment variants:
+MotrixLab 中保留平坦地形任务，同时新增复杂地形任务：
 
-- `anymal_c_navigation_flat`
-- `anymal_c_navigation_rough`
+```text
+anymal_c_navigation_flat
+anymal_c_navigation_rough
+```
 
-The rough-terrain variant points to `scene_rough.xml`, which uses a height-field terrain while preserving the same robot task interface.
+粗糙地形版本继承原 ANYmal-C 导航任务配置，仅将场景文件替换为 `scene_rough.xml`。该场景使用 height-field 生成起伏地形，同时保持导航任务接口一致。
 
-Relevant local implementation paths from the original task package:
+任务实现说明见 [docs/task2-implementation.md](docs/task2-implementation.md)。
 
-- `motrix_envs/src/motrix_envs/navigation/anymal_c/cfg.py`
-- `motrix_envs/src/motrix_envs/navigation/anymal_c/anymal_c_np.py`
-- `motrix_envs/src/motrix_envs/navigation/anymal_c/xmls/scene_rough.xml`
-- `train_eval_scripts/anymal_c_navigation_rough/train.bash`
-- `train_eval_scripts/anymal_c_navigation_rough/eval.bash`
+## 训练与评估
 
-## Training and Evaluation
-
-Train the rough-terrain navigation task:
+训练复杂地形导航任务：
 
 ```bash
 bash scripts/train_anymal_c_navigation_rough.bash
 ```
 
-Evaluate the trained policy:
+评估训练后的策略：
 
 ```bash
 bash scripts/eval_anymal_c_navigation_rough.bash
 ```
 
-Original MotrixLab commands:
+原始 MotrixLab 命令：
 
 ```bash
 uv run scripts/train.py --env anymal_c_navigation_rough --num-envs 4096
 uv run ./scripts/play.py --env anymal_c_navigation_rough --num-envs 64
 ```
 
-## Experiment Analysis
+## 训练分析
 
-During training, the learning rate showed a strong oscillating decay pattern, dropping from about `2e-4` to `2e-5`. The behavior indicates an adaptive schedule driven by KL divergence. In the early phase, especially around the 2k-6k step interval, the learning rate remained high and unstable, which made PPO updates too aggressive and caused episode-length fluctuation.
+训练过程中，学习率从约 `2e-4` 震荡衰减到 `2e-5`，表现出基于 KL divergence 的自适应调整特征。在 2k-6k 步附近，学习率仍高于 `1e-4` 且波动明显，PPO 更新步长偏大，容易破坏已经初步成型的策略，因此 episode length 出现抖动。
 
-After about 10k steps, the learning rate decayed below `5e-5`, allowing the policy to converge more smoothly around a stable solution.
+当训练推进到约 10k 步后，学习率降低至 `5e-5` 以下，策略更新更细，性能波动逐渐减弱。
 
-Optimization suggestions:
+优化建议：
 
-- Replace adaptive learning-rate scheduling with standard linear decay for smoother optimization.
-- Reduce the initial learning rate from `2e-4` to `1e-4` or `5e-5` for short training runs.
-- Track episode length, reward, KL divergence, and learning rate together instead of reading a single metric in isolation.
+- 将自适应学习率改为更平滑的线性衰减。
+- 将初始学习率从 `2e-4` 降至 `1e-4` 或 `5e-5`。
+- 同时观察 learning rate、KL divergence、episode length、reward 和 termination statistics。
 
-More details are in [docs/training-analysis.md](docs/training-analysis.md).
+详细分析见 [docs/training-analysis.md](docs/training-analysis.md)。
 
-## Results
-
-Demo video:
-
-[media/anymal_c_rough_terrain_demo.mp4](media/anymal_c_rough_terrain_demo.mp4)
-
-The project includes screenshots and demo footage showing ANYmal-C running in rough-terrain navigation scenes. Model checkpoints are treated as experiment artifacts and are intentionally not committed by default.
-
-## Repository Structure
+## 仓库结构
 
 ```text
 .
 ├── README.md
+├── README_EN.md
 ├── docs/
 │   ├── project-positioning.md
 │   ├── task2-implementation.md
@@ -136,16 +165,20 @@ The project includes screenshots and demo footage showing ANYmal-C running in ro
 │   ├── train_anymal_c_navigation_rough.bash
 │   └── eval_anymal_c_navigation_rough.bash
 └── media/
-    ├── rough_terrain_demo.png
-    └── anymal_c_rough_terrain_demo.mp4
+    ├── anymal_rough_terrain_preview.gif
+    ├── anymal_c_rough_terrain_demo.mp4
+    ├── robot_closeup.png
+    ├── rough_terrain_overview.png
+    ├── navigation_targets.png
+    └── multi_env_evaluation.png
 ```
 
-## Resume Summary
+## 简历项目描述
 
 > 基于 Isaac Lab 与 MotrixLab 完成 ANYmal-C 四足机器人复杂地形导航迁移，将平坦地形导航任务适配至 Rough Terrain 场景，接入 HeightScan 高度感知策略，并分析 PPO 训练中学习率震荡导致的策略不稳定问题，提出线性衰减和降低初始学习率等优化方案。
 
-More polished resume bullets are available in [docs/resume-bullets.md](docs/resume-bullets.md).
+更多中英文简历 bullet 见 [docs/resume-bullets.md](docs/resume-bullets.md)。
 
-## Notes
+## 说明
 
-This repository is packaged as a portfolio-friendly project derived from an online internship final task. It focuses on task migration, environment adaptation, experiment analysis, and documentation. The upstream simulation frameworks and robot assets remain the property of their respective maintainers.
+本仓库是基于线上实习结营项目整理出的作品集版本，重点展示任务迁移、环境适配、训练分析和项目文档化能力。上游仿真框架、机器人资产和相关工具归其原维护者所有。

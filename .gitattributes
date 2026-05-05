@@ -2,4 +2,5 @@
 *.py text eol=lf
 *.bash text eol=lf
 *.png binary
+*.gif binary
 *.mp4 binary
