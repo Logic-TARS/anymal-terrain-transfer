@@ -2,7 +2,7 @@
 
 # ANYmal-C Rough Terrain Navigation Transfer
 
-### A quadruped robot reinforcement-learning project with Isaac Lab and MotrixLab
+### Quadruped Robot RL · Sim-to-Sim Task Migration · PPO Stability Analysis
 
 [中文](README.md) · [Implementation Notes](docs/task2-implementation.md) · [Training Analysis](docs/training-analysis.md) · [Resume Bullets](docs/resume-bullets.md)
 
@@ -18,48 +18,62 @@
 
 </div>
 
-## Overview
+## Problem
 
-This repository packages an online-internship final project into a portfolio-friendly GitHub project. The project transfers ANYmal-C quadruped navigation from flat terrain to rough terrain, adapts a HeightScan-based low-level locomotion policy, and analyzes PPO training instability caused by adaptive learning-rate oscillation.
+Quadruped robots walk well on flat ground. On **rough terrain — gravel, slopes, uneven surfaces** — they fall easily. Body velocity and joint states alone are not enough; the robot needs to perceive ground height variation to adjust its gait in real time.
 
-The project is not presented as a reinforcement-learning framework built from scratch. Its focus is engineering-oriented task migration: understanding the existing Isaac Lab / MotrixLab stack, changing the environment configuration, adapting the policy interface, organizing training/evaluation scripts, and explaining the training behavior.
+This project migrates the ANYmal-C quadruped navigation task from **flat terrain to rough terrain**, equipping it with HeightScan-based terrain perception and analyzing PPO training stability along the way.
+
+> The focus is not training an RL policy from scratch, but completing a **task migration** within existing simulation frameworks (Isaac Lab / MotrixLab) — a scenario much closer to real engineering work.
 
 ## Demo
 
-The GIF above is generated from evaluation screenshots for reliable rendering on GitHub. The full MP4 demo is available here:
-
-[media/anymal_c_rough_terrain_demo.mp4](media/anymal_c_rough_terrain_demo.mp4)
-
-| Robot close-up | Rough-terrain overview |
+| Robot close-up | Rough terrain overview |
 | --- | --- |
 | ![robot closeup](media/robot_closeup.png) | ![rough terrain overview](media/rough_terrain_overview.png) |
 
-| Navigation markers | Multi-environment evaluation |
+| Navigation targets | Multi-environment evaluation |
 | --- | --- |
 | ![navigation targets](media/navigation_targets.png) | ![multi env evaluation](media/multi_env_evaluation.png) |
 
-## Highlights
+Full demo video: [media/anymal_c_rough_terrain_demo.mp4](media/anymal_c_rough_terrain_demo.mp4)
 
-- Migrated ANYmal-C navigation from flat terrain to rough terrain.
-- Replaced the flat low-level locomotion config with `AnymalCRoughEnvCfg`.
-- Adapted the policy interface to HeightScan observations.
-- Loaded the pretrained `ANYmal-C/HeightScan/policy.pt` low-level locomotion policy.
-- Organized MotrixLab training and evaluation scripts for `anymal_c_navigation_rough`.
-- Analyzed PPO instability caused by high and oscillating adaptive learning rates.
-- Packaged implementation notes, training analysis, screenshots, and video into a resume-ready GitHub repository.
+## Accomplishments
 
-## Technical Stack
+### Environment Adaptation
 
-| Area | Tools |
-| --- | --- |
-| Robot | ANYmal-C quadruped robot |
-| Simulation | Isaac Lab, MotrixLab, MotrixSim |
-| RL algorithm | PPO |
-| Policy adaptation | HeightScan-based low-level locomotion policy |
-| Training tools | SKRL, TensorBoard, Python |
-| Task | Rough Terrain Navigation, Target Tracking, Yaw Alignment |
+- Replaced the Isaac Lab low-level config from `AnymalCFlatEnvCfg` to `AnymalCRoughEnvCfg` for rough-terrain simulation
+- Added `anymal_c_navigation_rough` task in MotrixLab with height-field terrain generation
+- Kept the same navigation task interface (action/observation spaces) — a config-level migration
 
-## Core Workflow
+### Policy Transfer
+
+- Integrated HeightScan observations for terrain-aware locomotion
+- Loaded the pretrained `ANYmal-C/HeightScan/policy.pt` low-level policy
+- Maintained a 12-DoF action space (joint position control) and 54-D observation space
+
+### Training & Evaluation
+
+- Organized training/evaluation scripts for 4096 parallel environments (train) / 64 environments (eval)
+- Fully reproducible workflow — see commands below
+
+### PPO Stability Analysis
+
+Key observations from the training logs:
+
+| Metric | Observation |
+|--------|-------------|
+| Learning rate trend | Oscillated from `2e-4` down to `2e-5`, suggesting adaptive KL-based scheduling |
+| Steps 2k–6k | LR stayed above `1e-4` with strong oscillation; episode length fluctuated heavily |
+| After 10k steps | LR dropped below `5e-5`; finer policy updates led to stable behavior |
+
+**Key insight**: The policy was learning, but the adaptive learning rate kept destabilizing it with overly large updates during early-to-mid training.
+
+**Recommendations**: Replace adaptive scheduling with linear decay; reduce initial LR from `2e-4` to `1e-4` or `5e-5`.
+
+Detailed analysis at [docs/training-analysis.md](docs/training-analysis.md).
+
+## Workflow
 
 ```mermaid
 flowchart LR
@@ -70,11 +84,20 @@ flowchart LR
     E --> F["PPO Stability Analysis"]
 ```
 
-Rough-terrain navigation differs from flat-ground navigation because the robot must react to terrain height variation. The transfer therefore requires more than changing the terrain file: the low-level locomotion policy and its observation interface must also be aligned with HeightScan-based perception.
+## Tech Stack
+
+| Area | Tools |
+| --- | --- |
+| Robot | ANYmal-C quadruped |
+| Simulation | Isaac Lab, MotrixLab, MotrixSim |
+| RL algorithm | PPO (SKRL) |
+| Policy adaptation | HeightScan low-level locomotion policy |
+| Training tools | SKRL, TensorBoard, Python |
+| Task | Rough Terrain Navigation, Target Tracking, Yaw Alignment |
 
 ## Isaac Lab Adaptation
 
-The key Isaac Lab change is to replace the flat-terrain low-level configuration with the rough-terrain configuration and load the HeightScan policy:
+The key change: replace the flat-terrain low-level config and load the HeightScan policy.
 
 ```python
 from isaaclab_tasks.manager_based.locomotion.velocity.config.anymal_c.rough_env_cfg import (
@@ -92,72 +115,49 @@ pre_trained_policy_action = mdp.PreTrainedPolicyActionCfg(
 )
 ```
 
-See [examples/isaaclab_navigation_env_cfg_patch.py](examples/isaaclab_navigation_env_cfg_patch.py).
+Full example: [examples/isaaclab_navigation_env_cfg_patch.py](examples/isaaclab_navigation_env_cfg_patch.py).
 
-## MotrixLab Task
-
-The MotrixLab task keeps the flat-terrain version and adds a rough-terrain variant:
-
-```text
-anymal_c_navigation_flat
-anymal_c_navigation_rough
-```
-
-The rough-terrain variant inherits the original ANYmal-C navigation task and switches the scene to `scene_rough.xml`, which uses a height-field terrain while keeping the same task interface.
-
-See [docs/task2-implementation.md](docs/task2-implementation.md).
-
-## Training and Evaluation
-
-Train:
+## Training & Evaluation
 
 ```bash
+# Train (4096 parallel envs)
 bash scripts/train_anymal_c_navigation_rough.bash
-```
 
-Evaluate:
-
-```bash
+# Evaluate (64 envs)
 bash scripts/eval_anymal_c_navigation_rough.bash
 ```
 
-Original MotrixLab commands:
+Raw MotrixLab commands:
 
 ```bash
 uv run scripts/train.py --env anymal_c_navigation_rough --num-envs 4096
 uv run ./scripts/play.py --env anymal_c_navigation_rough --num-envs 64
 ```
 
-## Training Analysis
-
-The learning rate decayed from around `2e-4` to `2e-5` with noticeable oscillation, suggesting an adaptive schedule driven by KL divergence. Around the 2k-6k step interval, the learning rate stayed above `1e-4` and fluctuated strongly. For PPO, this can make policy updates too aggressive and destabilize an already emerging locomotion strategy.
-
-After about 10k steps, the learning rate dropped below `5e-5`, allowing finer policy updates and smoother behavior.
-
-Optimization suggestions:
-
-- Replace adaptive learning-rate scheduling with smoother linear decay.
-- Reduce the initial learning rate from `2e-4` to `1e-4` or `5e-5`.
-- Track learning rate, KL divergence, episode length, reward, and termination statistics together.
-
-See [docs/training-analysis.md](docs/training-analysis.md).
-
 ## Repository Structure
 
 ```text
 .
-├── README.md
-├── README_EN.md
+├── README.md / README_EN.md   # Bilingual project docs
 ├── docs/
+│   ├── project-positioning.md
+│   ├── task2-implementation.md
+│   ├── training-analysis.md
+│   └── resume-bullets.md
 ├── examples/
+│   └── isaaclab_navigation_env_cfg_patch.py
 ├── scripts/
+│   ├── train_anymal_c_navigation_rough.bash
+│   └── eval_anymal_c_navigation_rough.bash
 └── media/
 ```
 
 ## Resume Summary
 
-Migrated ANYmal-C quadruped navigation from flat terrain to rough terrain using Isaac Lab and MotrixLab, adapted a HeightScan-based low-level policy, and analyzed PPO instability caused by learning-rate oscillation, proposing smoother schedules and lower initial learning rates.
+> Migrated ANYmal-C quadruped navigation from flat terrain to rough terrain using Isaac Lab and MotrixLab, adapted a HeightScan-based low-level policy, and analyzed PPO instability caused by learning-rate oscillation, proposing smoother schedules and lower initial learning rates.
+
+See [docs/resume-bullets.md](docs/resume-bullets.md) for full Chinese and English resume entries.
 
 ## Notes
 
-This repository is a portfolio-oriented package derived from an online internship final project. It focuses on task migration, environment adaptation, experiment analysis, and project documentation. Upstream simulation frameworks and robot assets remain the property of their respective maintainers.
+This repository is a portfolio-oriented project showcasing task migration, framework adaptation, RL training analysis, and technical documentation. Upstream simulation frameworks and robot assets remain the property of their respective maintainers.
