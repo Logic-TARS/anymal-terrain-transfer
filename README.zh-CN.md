@@ -4,7 +4,7 @@
 
 ### 四足机器人强化学习 · 仿真任务迁移 · PPO 训练稳定性分析
 
-[English](README.md) · [实现文档](docs/task2-implementation.md) · [训练分析](docs/training-analysis.md) · [简历描述](docs/resume-bullets.md)
+[English](README.md) · [实现文档](docs/task2-implementation.md) · [训练分析](docs/training-analysis.md)
 
 ![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)
 ![Isaac Lab](https://img.shields.io/badge/Isaac%20Lab-Robotics%20Simulation-76B900)
@@ -23,8 +23,6 @@
 四足机器人在平地上可以稳定行走，但面对**复杂地形（碎石、斜坡、起伏地面）**，仅靠本体状态和速度命令远远不够。机器人需要感知脚下地形的高度变化，才能调整步态保持稳定。
 
 本项目的目标：将 ANYmal-C 四足机器人的导航任务从**平坦地形迁移到复杂地形**，使其具备地形感知能力，并分析 PPO 训练中的稳定性问题。
-
-> 核心挑战不是从零训练一个策略，而是在现有仿真框架（Isaac Lab / MotrixLab）下完成**任务迁移、策略适配和训练分析**——更贴近真实工程场景。
 
 ## 效果
 
@@ -72,17 +70,6 @@
 **优化建议**：线性学习率衰减替代自适应调整、初始学习率从 `2e-4` 降至 `1e-4` 或 `5e-5`。
 
 详细分析见 [docs/training-analysis.md](docs/training-analysis.md)。
-
-## 核心流程
-
-```mermaid
-flowchart LR
-    A["Flat Terrain Navigation"] --> B["Rough Terrain Config"]
-    B --> C["HeightScan Observation"]
-    C --> D["Pretrained Low-level Policy"]
-    D --> E["MotrixLab Training / Evaluation"]
-    E --> F["PPO Stability Analysis"]
-```
 
 ## 技术栈
 
@@ -151,12 +138,6 @@ uv run ./scripts/play.py --env anymal_c_navigation_rough --num-envs 64
 │   └── eval_anymal_c_navigation_rough.bash
 └── media/                       # 演示截图和视频
 ```
-
-## 简历摘要
-
-> 基于 Isaac Lab 与 MotrixLab 完成 ANYmal-C 四足机器人复杂地形导航迁移，将平坦地形导航任务适配至 Rough Terrain 场景，接入 HeightScan 高度感知策略，并分析 PPO 训练中学习率震荡导致的策略不稳定问题，提出线性衰减和降低初始学习率等优化方案。
-
-中英文完整简历描述见 [docs/resume-bullets.md](docs/resume-bullets.md)。
 
 ## 说明
 

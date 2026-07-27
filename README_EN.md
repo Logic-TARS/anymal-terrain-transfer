@@ -4,7 +4,7 @@
 
 ### Quadruped Robot RL · Sim-to-Sim Task Migration · PPO Stability Analysis
 
-[中文](README.md) · [Implementation Notes](docs/task2-implementation.md) · [Training Analysis](docs/training-analysis.md) · [Resume Bullets](docs/resume-bullets.md)
+[中文](README.zh-CN.md) · [Implementation Notes](docs/task2-implementation.md) · [Training Analysis](docs/training-analysis.md)
 
 ![Python](https://img.shields.io/badge/Python-3.10-3776AB?logo=python&logoColor=white)
 ![Isaac Lab](https://img.shields.io/badge/Isaac%20Lab-Robotics%20Simulation-76B900)
@@ -23,8 +23,6 @@
 Quadruped robots walk well on flat ground. On **rough terrain — gravel, slopes, uneven surfaces** — they fall easily. Body velocity and joint states alone are not enough; the robot needs to perceive ground height variation to adjust its gait in real time.
 
 This project migrates the ANYmal-C quadruped navigation task from **flat terrain to rough terrain**, equipping it with HeightScan-based terrain perception and analyzing PPO training stability along the way.
-
-> The focus is not training an RL policy from scratch, but completing a **task migration** within existing simulation frameworks (Isaac Lab / MotrixLab) — a scenario much closer to real engineering work.
 
 ## Demo
 
@@ -72,17 +70,6 @@ Key observations from the training logs:
 **Recommendations**: Replace adaptive scheduling with linear decay; reduce initial LR from `2e-4` to `1e-4` or `5e-5`.
 
 Detailed analysis at [docs/training-analysis.md](docs/training-analysis.md).
-
-## Workflow
-
-```mermaid
-flowchart LR
-    A["Flat Terrain Navigation"] --> B["Rough Terrain Config"]
-    B --> C["HeightScan Observation"]
-    C --> D["Pretrained Low-level Policy"]
-    D --> E["MotrixLab Training / Evaluation"]
-    E --> F["PPO Stability Analysis"]
-```
 
 ## Tech Stack
 
@@ -138,7 +125,7 @@ uv run ./scripts/play.py --env anymal_c_navigation_rough --num-envs 64
 
 ```text
 .
-├── README.md / README_EN.md   # Bilingual project docs
+├── README.md / README.zh-CN.md   # Bilingual project docs
 ├── docs/
 │   ├── project-positioning.md
 │   ├── task2-implementation.md
@@ -151,12 +138,6 @@ uv run ./scripts/play.py --env anymal_c_navigation_rough --num-envs 64
 │   └── eval_anymal_c_navigation_rough.bash
 └── media/
 ```
-
-## Resume Summary
-
-> Migrated ANYmal-C quadruped navigation from flat terrain to rough terrain using Isaac Lab and MotrixLab, adapted a HeightScan-based low-level policy, and analyzed PPO instability caused by learning-rate oscillation, proposing smoother schedules and lower initial learning rates.
-
-See [docs/resume-bullets.md](docs/resume-bullets.md) for full Chinese and English resume entries.
 
 ## Notes
 
